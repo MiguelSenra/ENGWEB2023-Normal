@@ -1,0 +1,24 @@
+Para garantir a persistência de dados, analisei o ficheiro de dados. O mesmo era uma lista de registos, pelo que estava na forma correta em termos de estrutura. Analisando os objetos reparei que cada um tinha um campo 'Id'. NO entanto, ao importar os registos para o mongodb seria criado um campo extra '_id' que depois poderia provocar alguns problemas em termos de rotas. Assim, substituí esse atributo por '_id'. Aparentemente, não foi necessário nenhum tipo de alteração extra. Para importar os registos para uma coleção nop mongodb, utilizei o comando 'mongoimport -d plantas -c plantas --file plantas.json --jsonArray', de forma a garantir que a base de dados e a coleção tivesse o nome plantas.  Ao importar os registos verifiquei se poderiam alguns não ter sido importados. Visto que tal não aconteceu, tendo em consideração que obtive o reultado '29617 document(s) imported successfully. 0 document(s) failed to import', segui para as queries.
+
+Resolução das queries(1.2)
+Esta query determina a lista de todos os registos e devolve o seu tamanho.
+1-db.plantas.find().count()
+A seguinte query realiza um select pelos registos, colocando numa lista todos aqueles que pertencem à freguesia de São Domingos de Rana. Por fim, devolve o tamanho da lista
+2-db.plantas.find({Freguesia:"São Domingos de Rana"}).count()
+A seguinte query determina a lista sem repetições de todos os valores presemtes no atributo Freguesia. Por fim, ordena a lista e devolve. Neste caso não é necessário parâmetros para a ordem de ordenaçãção porque o sort assume por definição a ordem crescente e porque temos uma lista de valores e não de registos. 
+3-db.plantas.distinct("Freguesia").sort()
+A seguinte query agrupa todos os registos por cada freguesia. No fim soma-se uma unidade por cada registo, calculando-se basicamente o tamanho da lista
+4-db.plantas.aggregate([{$group:{_id:"$Freguesia",num:{$sum:1}}}])
+Muito semelhante ao anterior agrupando-se apenas pelo atributo Espécie
+5-db.plantas.aggregate([{$group:{_id:"$Espécie",num:{$sum:1}}}])
+
+API de dados
+Para construir a API de dados, comecei por construir o ficheiro da pasta models, de modo a construir o 'Schema' dos registos que estão no mongodb. Isto é necessário para poder trabalhar com o mongo. Depois fiz o controller, que realiza a conexão ao mongo através da 'Schema' desenvolvida. Nesta fase, foi só atribuir um nome, definir os atributos necessários para a query funcionar e por fim, definir a query do mongo, neste caso foi o mongoose, mas a forma de escrever queries é muito semelhante. Já nas rotas, houve algum cuidado com a ordem das funções, visto que as funções são executadas através de um pipeline vertical. Assim, coloquei em primeiro lugar as rotas com query strings. Se a rota '/plantas' verificar que não tem o valor de query string, então através do next(), o url vai seguir pelo restante pipeline vertical. As rotas parametrizáveis foram as últimas para não dar problemas (no get). Nos restantes protocolos HTTP, não foi necessário definir ordem.
+Para executar a API de dados é necessaŕio apenas executar 'npm start' e depois aceder através do browser a uma das rotas determinadas, por exemplo, 'http://localhost:15030/plantas'.
+
+Interface
+Para construir a interface, comecei por definir cada uma das rotas, utilizando o axios para aceder à API de dados construída. O processo foi semelhnate àquele definido paras as rotas da API de dados. Para executar a interface temos que ter a API de dados a correr através do comando 'npm start' e depois iniciar a interface através do mesmo comando, cada um na sua diretoria (/ex1 e /ex2), respetivamente.    
+
+
+
+
